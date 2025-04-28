@@ -1,5 +1,10 @@
 ![alt text](系统框架.PNG)
 
+# 告警动态
+告警降噪产品：https://www.idss-cn.com/plus/view241230.html
+一种基于安全大模型的EDR告警研判机器人：https://xlab.tencent.com/cn/2024/01/26/edr-alert-analysis-robot/
+雏鹰云运维平台：https://github.com/yz-intelligence/WeiyingCloud
+基于智能合并的告警降噪管理：https://help.aliyun.com/zh/sls/alert-noise-reduction-management-based-on-intelligent-merging
 # 告警研判侧
 
 ## 告警日志获取
@@ -149,3 +154,40 @@
     *   **配置化**: 管理 LLM API 地址、认证、Prompt 模板等配置。
     *   **缓存**: 缓存相同输入的 LLM 评分结果。
     *   **错误处理与重试**: 实现 API 调用重试机制并记录失败。
+
+### 基于 LoRA 微调 Qwen2.5-14B 的参数建议
+参考：https://zhuanlan.zhihu.com/p/18758719083
+lora原理：https://blog.csdn.net/m0_63171455/article/details/139614304
+qwen2.5-32b使用lora微调实例：https://github.com/LFF8888/FF-Studio-Resources
+
+
+针对使用 3000 条网络安全数据集对 Qwen2.5-14B 模型进行 LoRA 指令微调，以下是一些推荐的起始参数设置。这些值是经验性的，最佳参数需要通过实验获得。
+
+*   **LoRA 参数**:
+    *   `r` (Rank): 16 或 32。对于 14B 模型和 3k 数据集，较低的 Rank (如 16) 可能有助于防止过拟合，可以从 16 开始尝试。
+    *   `lora_alpha`: 32 (如果 `r=16`) 或 64 (如果 `r=32`)。通常设置为 `r` 或 `2*r`。
+    *   `lora_dropout`: 0.05 或 0.1。用于正则化，防止过拟合。
+    *   `target_modules`: `['q_proj', 'k_proj', 'v_proj', 'o_proj', 'gate_proj', 'up_proj', 'down_proj']`。需要确认这些是 Qwen2.5-14B 模型的正确模块名称，可能需要查阅模型文档或结构。有时仅微调 `q_proj` 和 `v_proj` 也能获得不错的效果。
+
+*   **训练参数**:
+    *   `per_device_train_batch_size`: 尽可能大以适应 GPU 显存，例如 4, 8, 16。配合 `gradient_accumulation_steps` 来达到合适的有效批次大小 (Effective Batch Size)，例如 64 或 128。
+    *   `gradient_accumulation_steps`: `Effective Batch Size / (per_device_train_batch_size * num_gpus)`。
+    *   `num_train_epochs`: 1 到 3。由于数据集较小，训练可能很快收敛或过拟合，需要密切监控验证集损失。
+    *   `learning_rate`: 1e-4 到 3e-4。LoRA 通常使用比全量微调稍高的学习率。
+    *   `optimizer`: AdamW (常用 `adamw_torch`)。
+    *   `lr_scheduler_type`: `cosine` 或 `linear`，通常带有预热 (warmup)。
+    *   `warmup_ratio` 或 `warmup_steps`: 例如 0.03 或 0.1，或者设置固定的 warmup 步数。
+    *   `weight_decay`: 0.01 或 0.1。
+
+*   **其他**:
+    *   `fp16` 或 `bf16`: True。使用混合精度训练以加速并减少显存占用。`bf16` 通常更稳定，如果硬件支持的话。
+    *   `gradient_checkpointing`: True。可以显著减少显存使用，但会增加训练时间。
+    *   `logging_steps`: 合理设置以监控训练过程，例如 10 或 50。
+    *   `evaluation_strategy`: "steps" 或 "epoch"。配合 `eval_steps` 或在每个 epoch 结束时评估。
+    *   `save_strategy`: "steps" 或 "epoch"。配合 `save_steps` 或 `save_total_limit`。
+
+**建议**:
+1.  **从小处开始**: 使用较低的 `r` (如 16) 和较小的学习率 (如 1e-4) 开始实验。
+2.  **监控验证集**: 密切关注验证集损失 (Validation Loss)，使用早停法 (Early Stopping) 防止过拟合。
+3.  **实验调整**: 根据验证集效果调整 `r`, `lora_alpha`, `learning_rate` 等超参数。
+4.  **检查目标模块**: 确保 `target_modules` 列表与 Qwen2.5-14B 的实际层名称匹配。
