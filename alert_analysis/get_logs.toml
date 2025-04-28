@@ -1,0 +1,14 @@
+# es日志获取配置文件
+
+# 程序运行中删除日志类型是否一同更新日志时间戳类型(1：是；0：否)
+update_timestamp = 0
+
+# 获取日志名称
+logs_type = ["tianyan", "alarm-tianyan", "zhongzi", "v2zhongzi", "waf"]
+
+# 程序启动、或新加入日志种类的开始获取时间
+# 格式 "yyyy-MM-dd HH:mm:ss"
+default_time = ""
+
+# 等待时间(s)
+waiting_time = 60

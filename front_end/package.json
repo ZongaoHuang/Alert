@@ -1,0 +1,28 @@
+{
+  "name": "nuxt-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^0.0.36",
+    "@ai-sdk/vue": "^0.0.15",
+    "@nuxt/ui": "^2.17.0",
+    "ai": "^3.2.22",
+    "echarts": "^5.5.1",
+    "nuxt": "^3.12.3",
+    "ollama-ai-provider": "^0.10.0",
+    "vue": "latest",
+    "vue-echarts": "^6.7.3",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@pinia/nuxt": "^0.5.1",
+    "@vueuse/nuxt": "^10.11.0"
+  }
+}

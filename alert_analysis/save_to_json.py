@@ -1,0 +1,21 @@
+def log_entry_to_dict(entry):
+    return {
+        'log_type': entry.log_type,
+        'id': entry.id,
+        'sip': entry.sip,
+        'dip': entry.dip,
+        'sport': entry.sport,
+        'dport': entry.dport,
+        'timestamp': entry.timestamp,
+        'attack_type': entry.attack_type,
+        'attack_result': entry.attack_result,
+        'severity': entry.severity,
+        'req_header': entry.req_header,
+        'req_body': entry.req_body,
+        'rsp_header': entry.rsp_header,
+        'rsp_body': entry.rsp_body,
+        'packet_data': entry.packet_data,
+        'threat_status': entry.threat_status,
+        'filtered_stage': entry.filtered_stage,
+        'related_alerts_ids': entry.related_alerts_ids
+    }
